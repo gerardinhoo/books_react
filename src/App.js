@@ -1,12 +1,16 @@
 import React, { Component } from 'react';
 import axios from "axios";
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Label, Input } from "reactstrap";
 
 import './App.css';
 
 class App extends Component {
   state = {
     books: [],
+    newBookData: {
+      Title: "",
+      Rating: ""
+    },
     newBookModal: false
   }
 
@@ -17,16 +21,32 @@ class App extends Component {
       })
   }
 
-
   toggleNewBookModal = () => {
-    this.setState({ newBookModal: true })
+    this.setState({ newBookModal: !this.state.newBookModal })
+  }
+
+  addBook = () => {
+    axios.post("http://localhost:3000/books", this.state.newBookData)
+      .then(response => {
+        console.log(response.data)
+        let { books } = this.state;
+        books.push(response.data);
+        this.setState({
+          books: books,
+          newBookModal: false,
+          newBookData: {
+            Title: "",
+            Rating: ""
+          }
+        })
+      })
   }
 
   render() {
     let mapBooks = this.state.books.map((book) => {
       return (
         <tr key={book.id}>
-          <td>{book.Rank}</td>
+          <td>{book.id}</td>
           <td>{book.Title}</td>
           <td>{book.Rating}</td>
           <td style={{ display: "flex" }}>
@@ -39,14 +59,32 @@ class App extends Component {
 
     return (
       <div className="container">
-        <Button color="primary" onClick={this.toggleNewBookModal}>Add Bookkkk</Button>
+        <Button color="info" onClick={this.toggleNewBookModal}>Add Book</Button>
         <Modal isOpen={this.state.newBookModal} toggle={this.toggleNewBookModal}>
-          <ModalHeader toggle={this.toggleNewBookModal}>Modal title</ModalHeader>
+          <ModalHeader toggle={this.toggleNewBookModal}>Add a New Book</ModalHeader>
           <ModalBody>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+            <FormGroup>
+              <Label for="title">Title</Label>
+              <Input id="title" value={this.state.newBookData.Title} onChange={(e) => {
+                let { newBookData } = this.state;
+                newBookData.Title = e.target.value;
+                this.setState({ newBookData })
+              }}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label for="rating">Rating</Label>
+              <Input id="rating" value={this.state.newBookData.Rating} onChange={(e) => {
+                let { newBookData } = this.state;
+                newBookData.Rating = e.target.value;
+                this.setState({ newBookData })
+              }}
+              />
+            </FormGroup>
           </ModalBody>
           <ModalFooter>
-            <Button color="primary" onClick={this.toggleNewBookModal}>Do Something</Button>{' '}
+            <Button color="primary" onClick={this.addBook}>Add Book</Button>{' '}
             <Button color="secondary" onClick={this.toggleNewBookModal}>Cancel</Button>
           </ModalFooter>
         </Modal>
